@@ -1,7 +1,8 @@
 "use strict";
 
 const Course = require("../models/Course")
-
+httpStatus = require("http-status-codes")
+User = require("../models/user")
 module.exports = {
     index: (req, res, next) => {
         Course.find()
@@ -99,4 +100,42 @@ module.exports = {
             next(error);
         })
     }
-}
+};
+
+respondJSON: (req, res) => {
+    res.json({
+      status: httpStatus.OK,
+      data: res.locals
+    });
+  };
+  errorJSON: (error, req, res, next) => {
+    let errorObject;
+    if (error) {
+      errorObject = {
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message
+      };
+    } 
+    else {
+      errorObject = {
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        message: "Unknown Error."
+      };
+    };
+    filterUserCourses: (req, res, next) => {
+        let currentUser = res.locals.currentUser;
+        if(currentUser){
+            let mappedCourses = res.locals.courses.map((course) => {
+               let userJoined = currentUser.courses.some((userCourse) => {
+                   return userCourse.equals(course._id);
+               });
+               return Object.assign(course.toObject(), {joined: userJoined});
+            });
+            res.locals.courses = mappedCourses;
+            next();
+        }else{
+            next();
+        }
+    }
+    res.json(errorObject);
+  };

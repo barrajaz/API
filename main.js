@@ -28,15 +28,15 @@ mongoose.set("useCreateIndex", true);
 app.set("port", process.env.PORT || 3000);
 app.set("view engine", "ejs");
 
-router.use(
+app.use(
     methodOverride("_method", {
         methods: ["POST"]
     })
 );
-router.use(express.json());
+app.use(express.json());
 
-router.use(cookieParser("secretCuisine123"));
-router.use(expressSession({
+app.use(cookieParser("secretCuisine123"));
+app.use(expressSession({
     secret: "my_passcode",
     cookie: {
         maxAge: 360000
@@ -45,23 +45,23 @@ router.use(expressSession({
     saveUninitialized: false
 }));
 
-router.use(connectFlash());
+app.use(connectFlash());
 
-router.use(passport.initialize());
-router.use(passport.session());
+app.use(passport.initialize());
+app.use(passport.session());
 passport.use(User.createStrategy());
 passport.serializeUser(User.deserializeUser);
 passport.deserializeUser(User.serializeUser);
 
-router.use((req, res, next) => {
+app.use((req, res, next) => {
     res.locals.flashMessages = req.flash();
     res.locals.loggedIn = req.isUnauthenticated();
     res.locals.currentUser = req.user;
 })
 
-router.use(layouts);
-router.use(express.static("public"));
-router.use(expressValidator());
+app.use(layouts);
+app.use(express.static("public"));
+app.use(expressValidator());
 
 router.use(methodOverride("_method", {methods : ["POST", "GET"]}));
 
